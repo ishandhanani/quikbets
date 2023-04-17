@@ -28,30 +28,46 @@ contract QuickBet{
     /**
      * @dev the first player opens a bet, places a bet, and sets the critera
      */
-    function createBet() public payable {
+    function createBet(string calldata _description, bool _choice, uint256 _wager) public payable {
         betNum++;
-
+        allBets[betNum].betID = betNum;
+        allBets[betNum].description = _description;
+        allBets[betNum].players.push(msg.sender);
+        allBets[betNum].playerChoice[msg.sender] = _choice;
+        allBets[betNum].playerBets[msg.sender] = _wager;
     }
 
     /**
      * @dev function for players to join the bet 
      */
-    function joinBet() public payable {
-        ///
+    function joinBet(uint256 _betID, bool _choice, uint256 _wager) public payable {
+        Bet storage bet = allBets[_betID];
+        bet.players.push(msg.sender);
+        bet.playerChoice[msg.sender] = _choice;
+        bet.playerBets[msg.sender] = _wager;
     }
 
     /**
      * @dev start the bet. atleast 1 person must be on the opposite side
      */
-    function startBet() public {
-        ///
+    function opposingBets(uint256 _betID) public view returns (bool) {
+        Bet storage bet = allBets[_betID];
+        for(uint256 i = 1; i < bet.players.length; ++i){
+            if (bet.playerChoice[bet.players[0]] != bet.playerChoice[bet.players[i]]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * @dev every participant needs to sign/confirm the correct outcome
      */
-    function confirmOutcome() public {
-        ///
+    function determineOutcome(uint256 _betID) public view {
+        require(opposingBets(_betID), "Atleast 2 people need to be on opposing sides");
+        //mapping that holds everyones "signed" value of True or False
+        //check that every value in the mapping is the same or throw 
+        //if entire address[] has the same value then payout is enabled based on playerChoice
     }
 
     /**
