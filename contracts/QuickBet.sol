@@ -22,13 +22,15 @@ contract QuickBet{
     event BetPlaced(uint256 _betID, string _description, address[] players);
     event BetComplete(uint256 _betID, string _description, bool _winningChoice);
 
-    Bet[] public bets;
+    mapping(uint256 => Bet) public allBets;
+    uint256 public betNum;
 
     /**
      * @dev the first player opens a bet, places a bet, and sets the critera
      */
     function createBet() public payable {
-        ///
+        betNum++;
+
     }
 
     /**
