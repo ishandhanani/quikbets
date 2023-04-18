@@ -88,6 +88,7 @@ contract QuickBet{
     function payOut(uint256 _betID) public {
         require(allBets[_betID].payoutReady, "payout not ready");
         require(allBets[_betID].winningBet == playerChoices[msg.sender],  "only winners get paid");
+        /* pay the man */
     }
 
     function receive() {/* foo */}
