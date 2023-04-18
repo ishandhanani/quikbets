@@ -17,6 +17,7 @@ contract QuickBet{
         mapping(address => bool) outcomeReports;
         bool payoutReady;
         bool betComplete;
+        bool winningBet;
         uint256 betExpiry;
     }
 
@@ -76,6 +77,7 @@ contract QuickBet{
             );
         }
         //if every player agrees, then payout is enabled based on playerChoices
+        bet.winningBet = bet.playerChoices[bet.players[0]];
         bet.payoutReady = true;
     }
 
