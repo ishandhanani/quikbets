@@ -12,15 +12,16 @@ contract QuickBet{
         uint256 betID;
         string description;
         address[] players;
-        mapping(address => bool) playerChoice;
+        mapping(address => bool) playerChoices;
         mapping(address => uint256) playerBets;
+        mapping(address => bool) outcomeReports;
+        bool payoutReady;
         bool betComplete;
-        bool winningChoice;
         uint256 betExpiry;
     }
 
     event BetPlaced(uint256 _betID, string _description, address[] players);
-    event BetComplete(uint256 _betID, string _description, bool _winningChoice);
+    event BetComplete(uint256 _betID, string _description);
 
     mapping(uint256 => Bet) public allBets;
     uint256 public betNum;
@@ -33,7 +34,7 @@ contract QuickBet{
         allBets[betNum].betID = betNum;
         allBets[betNum].description = _description;
         allBets[betNum].players.push(msg.sender);
-        allBets[betNum].playerChoice[msg.sender] = _choice;
+        allBets[betNum].playerChoices[msg.sender] = _choice;
         allBets[betNum].playerBets[msg.sender] = _wager;
     }
 
@@ -43,7 +44,7 @@ contract QuickBet{
     function joinBet(uint256 _betID, bool _choice, uint256 _wager) public payable {
         Bet storage bet = allBets[_betID];
         bet.players.push(msg.sender);
-        bet.playerChoice[msg.sender] = _choice;
+        bet.playerChoices[msg.sender] = _choice;
         bet.playerBets[msg.sender] = _wager;
     }
 
@@ -53,7 +54,7 @@ contract QuickBet{
     function opposingBets(uint256 _betID) public view returns (bool) {
         Bet storage bet = allBets[_betID];
         for(uint256 i = 1; i < bet.players.length; ++i){
-            if (bet.playerChoice[bet.players[0]] != bet.playerChoice[bet.players[i]]) {
+            if (bet.playerChoices[bet.players[i]] != bet.playerChoices[bet.players[0]]) {
                 return true;
             }
         }
@@ -61,22 +62,32 @@ contract QuickBet{
     }
 
     /**
-     * @dev every participant needs to sign/confirm the correct outcome
+     * @dev every participant needs to confirm the same outcome
      */
-    function determineOutcome(uint256 _betID) public view {
-        require(opposingBets(_betID), "Atleast 2 people need to be on opposing sides");
+    function determineOutcome(uint256 _betID) public {
+        require(opposingBets(_betID), "At least 2 people need to be on opposing sides");
         //mapping that holds everyones "signed" value of True or False
-        //check that every value in the mapping is the same or throw 
-        //if entire address[] has the same value then payout is enabled based on playerChoice
+        //check that every value in the mapping is the same
+        Bet storage bet = allBets[_betID];
+        for (uint256 i = 1; i < players.length; ++i) {
+            require(
+                bet.playerChoices[bet.players[i]] == bet.playerChoices[bet.players[0]],
+                "some players dispute the outcome"
+            );
+        }
+        //if every player agrees, then payout is enabled based on playerChoices
+        bet.payoutReady = true;
     }
 
     /**
      * @dev logic to calculate payouts for winners
      * @dev winners must approve to receive their funds 
      */
-    function payOut() public {
-        ///
+    function payOut(uint256 _betID) public {
+        require(allBets[_betID]payoutReady, "payout not ready");
+        /* foo */
     }
 
-
+    function receive() {/* foo */}
+    Fallback() {}
 }
