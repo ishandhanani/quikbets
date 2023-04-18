@@ -86,8 +86,8 @@ contract QuickBet{
      * @dev winners must approve to receive their funds 
      */
     function payOut(uint256 _betID) public {
-        require(allBets[_betID]payoutReady, "payout not ready");
-        /* foo */
+        require(allBets[_betID].payoutReady, "payout not ready");
+        require(allBets[_betID].winningBet == playerChoices[msg.sender],  "only winners get paid");
     }
 
     function receive() {/* foo */}
