@@ -11,6 +11,7 @@ contract QuickBet{
     // only binary bets allowed
     // the description should clearly specify what each choice corresponds to
     // using an enum instead of a binary choice allows us to scale in the future
+    // accepts 0 for Choice1 and 1 for Choice2...probably change 
     enum CHOICE {
         Choice1,
         Choice2
@@ -23,6 +24,7 @@ contract QuickBet{
         mapping(address => CHOICE) playerChoices;
         mapping(address => uint256) playerBets;
         mapping(address => CHOICE) playerAttestations;
+        uint8 attestationCount;
         bool payoutReady;
         bool betComplete;
         CHOICE winningBet;
@@ -44,6 +46,7 @@ contract QuickBet{
      * @param _wager the initiating player's wager
      */
     function createBet(string calldata _description, CHOICE _choice, uint256 _wager) public payable {
+        require(uint(_choice) == 1 || uint(_choice) == 0, "You must chose 0 for Choice1 or 1 for Choice2");
         betNum++;
         allBets[betNum].betID = betNum;
         allBets[betNum].description = _description;
@@ -93,19 +96,21 @@ contract QuickBet{
         //ensure that opposing bets exist
         require(opposingBets(_betID), "At least 2 people need to be on opposing sides");
 
-        //make sure that teh bet is not complete
+        //make sure that the bet is not complete
         require(!bet.betComplete, "Bet is already completed");
         
         //make sure current time is after bet expiry
         require(block.timestamp >= bet.betExpiry, "Outcome cannot be determined. Bet has not expired");
 
-        //make sure minimum number of people have called the function to start the snowball
-        //require();
-
-        //attestations
+        //save attestation and increment counter
         bet.playerAttestations[msg.sender] = _attestation;
+        ++bet.attestationCount;
+        uint8 minAttestations = 4; //this is a placeholder for now
 
-        //check that enough people have attested 
+        //make sure minimum number of people have called the function to start the snowball
+        if (bet.attestationCount < minAttestations) { 
+            revert("More attestations are required for random sampling");
+        }
 
         //implementing a rough version of snowball consensus
         //  Randomly sample a minimum group of voters 
@@ -115,45 +120,49 @@ contract QuickBet{
         //  Potentially add an appeal function?
 
         uint8 round = 0;
-        uint8 maxRounds = 10;
+        uint8 maxRounds = 3;
         uint8[2] memory votes; //static size array for votes --> index 0 is for the vote=0 and index 1 is for vote=2
-        uint8 sampleSize = 5; //this needs to be calculated 
+        uint8 sampleSize = 2; //this needs to be calculated --> should this be minAttestations/2
+        
+        // reset vote counters to 0 to remove data from previous rounds if consensus was not reached 
+        // is this optimal to happen here?
+        votes[0] = 0;
+        votes[1] = 0;
+        
         while (round < maxRounds) {
-            // reset vote counters 
-            votes[0] = 0;
-            votes[1] = 0;
-            
-
             //take a random sample - this lets us scale if there are a lot of betters
             address[] memory sampledPlayers = new address[](sampleSize);
-            for (uint256 i = 0; i < sampleSize; ++i) { //need to take a random sample of votes here instead of iterating through array 
-                //logic for randomness
-                uint256 j = uint256(keccak256(abi.encodePacked(block.timestamp, i))) % bet.players.length;
+            for (uint256 i = 0; i < sampleSize; ++i) {
+                uint256 j = uint256(keccak256(abi.encodePacked(block.timestamp, i))) % bet.players.length; //logic for randomness
                 address player = bet.players[j];
                 sampledPlayers[i] = player;
-                if (bet.playerAttestations[player] == CHOICE.Choice1){
+                if (bet.playerAttestations[player] == CHOICE.Choice1){ //might have to wrap the CHOICE.Choice1 in a uint()
                     votes[0]++;
                 }
                 else {
                     votes[1]++;
                 }
             }
+            //check consensus
+            //this logic needs to be fixed//
+            if (votes[0] > sampleSize / 2 || votes[1] > sampleSize / 2) {
+                bet.betComplete = true;
+                if (votes[0] > votes[1]){
+                    bet.winningBet = CHOICE.Choice1;
+                }
+                else {
+                    bet.winningBet = CHOICE.Choice2;
+                }
+                return;
+            }
+        
+        
         }
 
-        //check consensus
-        if (votes[0] > sampleSize / 2 || votes[1] > sampleSize / 2) {
-            bet.betComplete = true;
-            if (votes[0] > votes[1]){
-                bet.winningBet = CHOICE.Choice1;
-            }
-            else {
-                bet.winningBet = CHOICE.Choice2;
-            }
-            return;
-        }
 
         //if consensus was not reached
         ++round;
+        //remove all the attestations to reset 
         revert("Consensus was not reached. Reverting the process. Please attest again");
     }
 
