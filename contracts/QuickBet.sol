@@ -17,6 +17,7 @@ contract QuickBet{
         Choice2
     }
     
+    //restructure the attestation variables to make this cleaner
     struct Bet {
         uint256 betID;
         string description;
@@ -71,6 +72,7 @@ contract QuickBet{
         emit BetStarted(_betID, bet.description, bet.players);
     }
 
+    //turn this into a modifier
     /**
      * @dev checks that atleast 1 person must be on the opposite side
      * this can be turned into a modifer in the future 
@@ -155,8 +157,9 @@ contract QuickBet{
                 }
                 return;
             }
-        
-        
+
+            //this then needs to hold the result of every single round
+            // if its the same for Y times --> then we exit out and declare a final value
         }
 
 
