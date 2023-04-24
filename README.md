@@ -2,14 +2,6 @@
 
 An on-chain betting contract that uses leverages user attestations and a modified version of snowball consensus to determine the outcome of a bet. This is currently in development and is not meant to be used in production. If you have any ideas on how to improve this project or mess with the consensus portion, please reach out to me. 
 
-Table of contents
-
-Authors
-Overview
-Functionality
-Usage
-License
-
 ## Overview
 
 QuickBet is an Solidity smart contract that enables users to create and participate in simple binary bets. For example, this application is useful for betting on the winner of the Super Bowl. It is not as useful for over/under or odds-based bets. The contract is designed to ensure that bets must have atleast 1 person on teh other side and each bet has a predefined expiry time.
