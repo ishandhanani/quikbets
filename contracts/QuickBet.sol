@@ -107,24 +107,24 @@ contract QuickBet{
         //save attestation and increment counter
         bet.playerAttestations[msg.sender] = _attestation;
         ++bet.attestationCount;
-        uint8 minAttestations = 4; //this is a placeholder for now
+        uint256 minAttestations = bet.players.length - 2; //this is a placeholder for now
 
         //make sure minimum number of people have called the function to start the snowball
         if (bet.attestationCount < minAttestations) { 
             revert("More attestations are required for random sampling");
         }
 
-        //implementing a rough version of snowball consensus
-        //  Randomly sample a minimum group of voters 
-        //  Get their majority vote 
-        //  Loop for X rounds (X is TBD)
-        //  When the majority matches for Y (TBD) rounds, declare the winning choice 
+        //implementing a rough/custom version of snowball consensus
+        //  Randomly sample a minimum group of voters (size k)
+        //  Get their majority vote (either supermajority or a custom quorum: a)
+        //  Loop for X rounds (X is TBD) (this is different because we dont repeatedly query. you must reattest if majority is not reached)
+        //  When the majority matches for Y (TBD) rounds, declare the winning choice (decision threshold b) 
         //  Potentially add an appeal function?
 
         uint8 round = 0;
-        uint8 maxRounds = 3;
+        uint8 maxRounds = 5; // does this need to be dynamic so it can adjust to the number of betters?
         uint8[2] memory votes; //static size array for votes --> index 0 is for the vote=0 and index 1 is for vote=2
-        uint8 sampleSize = 2; //this needs to be calculated --> should this be minAttestations/2
+        uint256 sampleSize = minAttestations / 2; //this needs to be calculated --> should this be minAttestations/2?
         
         // reset vote counters to 0 to remove data from previous rounds if consensus was not reached 
         // is this optimal to happen here?
@@ -160,13 +160,11 @@ contract QuickBet{
 
             //this then needs to hold the result of every single round
             // if its the same for Y times --> then we exit out and declare a final value
+            //if consensus was not reached
+            ++round;
         }
-
-
-        //if consensus was not reached
-        ++round;
         //remove all the attestations to reset 
-        revert("Consensus was not reached. Reverting the process. Please attest again");
+        revert("Consensus was not reached. Reverting the process. Everyone must attest again");
     }
 
     /**
