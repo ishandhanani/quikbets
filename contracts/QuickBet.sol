@@ -122,16 +122,20 @@ contract QuickBet{
         //  Potentially add an appeal function?
 
         uint8 round = 0;
-        uint8 maxRounds = 5; // does this need to be dynamic so it can adjust to the number of betters?
+        uint8 maxRounds = 10; // does this need to be dynamic? i dont think so...
         uint8[2] memory votes; //static size array for votes --> index 0 is for the vote=0 and index 1 is for vote=2
-        uint256 sampleSize = minAttestations / 2; //this needs to be calculated --> should this be minAttestations/2?
-        
-        // reset vote counters to 0 to remove data from previous rounds if consensus was not reached 
-        // is this optimal to happen here?
-        votes[0] = 0;
-        votes[1] = 0;
-        
+        uint256 sampleSize = minAttestations / 2; //this might have to be dynamic based on the number of betters
+        uint256 consecutiveSuccesses = 0;
+        uint256 successThreshold = 6;
+
         while (round < maxRounds) {
+            // reset vote counters to 0 to remove data from previous rounds if consensus was not reached 
+            // is this optimal to happen here?
+            CHOICE prevChoice;
+            CHOICE majority;
+            votes[0] = 0;
+            votes[1] = 0;
+
             //take a random sample - this lets us scale if there are a lot of betters
             address[] memory sampledPlayers = new address[](sampleSize);
             for (uint256 i = 0; i < sampleSize; ++i) {
@@ -146,15 +150,25 @@ contract QuickBet{
                 }
             }
             //check consensus
-            //this logic needs to be fixed//
-            if (votes[0] > sampleSize / 2 || votes[1] > sampleSize / 2) {
-                bet.betComplete = true;
+            if (votes[0] > votes[1]) {
                 if (votes[0] > votes[1]){
-                    bet.winningBet = CHOICE.Choice1;
+                    majority = CHOICE.Choice1;
                 }
                 else {
-                    bet.winningBet = CHOICE.Choice2;
+                    majority = CHOICE.Choice2;
                 }
+            }
+
+            //check consecutive
+            if (majority == prevChoice){
+                ++consecutiveSuccesses;
+            }
+            else {
+                consecutiveSuccesses = 1;
+            }
+
+            //exit out if threshold is hit
+            if (consecutiveSuccesses == successThreshold){
                 return;
             }
 
