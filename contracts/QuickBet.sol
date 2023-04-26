@@ -3,7 +3,6 @@ pragma solidity ^0.8.9;
 
 /**
  * QuickBet - an on-chain betting contract that uses attestations and a modified version of snowball consensus 
- * Authors - Ishan Dhanani and Ian Beckett
  */
 
 contract QuickBet{
@@ -72,10 +71,9 @@ contract QuickBet{
         emit BetStarted(_betID, bet.description, bet.players);
     }
 
-    //turn this into a modifier
     /**
      * @dev checks that atleast 1 person must be on the opposite side
-     * this can be turned into a modifer in the future 
+     * @dev this can be turned into a modifer in the future 
      */
     function opposingBets(uint256 _betID) public view returns (bool) {
         Bet storage bet = allBets[_betID];
@@ -91,6 +89,7 @@ contract QuickBet{
      * @dev every participant needs to confirm the same outcome
      * @dev a rough attempt at continous sampling until consensus is reached
      * Anyone call call this function and attest their choice
+     * @dev can scale this based on player.length (ex. <5 req total unanimous, >5 req supermajority)
      */
     function determineOutcome(uint256 _betID, CHOICE _attestation) public {
         Bet storage bet = allBets[_betID];
