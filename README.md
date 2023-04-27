@@ -1,4 +1,4 @@
-# QuickBet
+# QuickBets
 
 An on-chain betting contract that uses leverages user attestations and a modified version of snowball consensus to determine the outcome of a bet. This is currently in development and is not meant to be used in production. If you have any ideas on how to improve this project or mess with the consensus portion, please reach out to me.
 
