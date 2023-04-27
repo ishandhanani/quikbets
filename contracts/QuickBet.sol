@@ -181,4 +181,8 @@ contract QuickBet{
         //require(allBets[_betID].winningBet == playerChoices[msg.sender],  "only winners get paid");
         /* pay the man */
     }
+
+    // do not touch
+    receive() external payable {}
+    fallback() external payable {}
 }
