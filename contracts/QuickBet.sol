@@ -26,14 +26,14 @@ contract QuickBet{
         mapping(address => CHOICE) playerAttestations;
         uint8 attestationCount;
         bool payoutReady;
-        bool betComplete;
+        bool complete;
         CHOICE winningBet;
-        uint256 betExpiry;
+        uint256 expiry;
     }
 
-    event BetCreated(uint256 _betID, string _description);
-    event BetStarted(uint256 _betID, string _description, address[] players);
-    event BetComplete(uint256 _betID, string _description, CHOICE _winner);
+    event created(uint256 _betID, string _description);
+    event started(uint256 _betID, string _description, address[] players);
+    event complete(uint256 _betID, string _description, CHOICE _winner);
 
     mapping(uint256 => Bet) public allBets;
     uint256 public betNum;
@@ -54,7 +54,7 @@ contract QuickBet{
         allBets[betNum].playerChoices[msg.sender] = _choice;
         allBets[betNum].playerBets[msg.sender] = _wager;
         //set expiry
-        emit BetCreated(betNum, _description);
+        emit created(betNum, _description);
     }
 
     /**
@@ -68,7 +68,7 @@ contract QuickBet{
         bet.players.push(msg.sender);
         bet.playerChoices[msg.sender] = _choice;
         bet.playerBets[msg.sender] = _wager;
-        emit BetStarted(_betID, bet.description, bet.players);
+        emit started(_betID, bet.description, bet.players);
     }
 
     /**
@@ -98,10 +98,10 @@ contract QuickBet{
         require(opposingBets(_betID), "At least 2 people need to be on opposing sides");
 
         //make sure that the bet is not complete
-        require(!bet.betComplete, "Bet is already completed");
+        require(!bet.complete, "Bet is already completed");
         
         //make sure current time is after bet expiry
-        require(block.timestamp >= bet.betExpiry, "Outcome cannot be determined. Bet has not expired");
+        require(block.timestamp >= bet.expiry, "Outcome cannot be determined. Bet has not expired");
 
         //save attestation and increment counter
         bet.playerAttestations[msg.sender] = _attestation;
@@ -148,6 +148,7 @@ contract QuickBet{
                     votes[1]++;
                 }
             }
+
             //check consensus
             if (votes[0] > votes[1]) {
                 if (votes[0] > votes[1]){
