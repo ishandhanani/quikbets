@@ -82,13 +82,21 @@ contract QuickBet{
         return false;
     }
 
+    function attest(uint256 _betID, CHOICE claim) public {
+        Bet storage bet = allBets[_betID];
+        bet.playerAttestations[msg.sender] = claim;
+        ++bet.attestationCount;
+    }
+
     /**
      * @dev every participant needs to confirm the same outcome
      * @dev a rough attempt at continous sampling until consensus is reached
      * Anyone call call this function and attest their choice
      * @dev can scale this based on player.length (ex. <5 req total unanimous, >5 req supermajority)
+     * @param _betID relevant bet
+     * @param _attestation the 
      */
-    function determineOutcome(uint256 _betID, CHOICE _attestation) public {
+    function determineOutcome(uint256 _betID) public {
         Bet storage bet = allBets[_betID];
         
         //ensure that opposing bets exist
@@ -100,9 +108,6 @@ contract QuickBet{
         //make sure current time is after bet expiry
         require(block.timestamp >= bet.expiry, "Outcome cannot be determined. Bet has not expired");
 
-        //save attestation and increment counter
-        bet.playerAttestations[msg.sender] = _attestation;
-        ++bet.attestationCount;
         uint256 minAttestations = bet.players.length - 2; //this is a placeholder for now
 
         //make sure minimum number of people have called the function to start the snowball
@@ -160,6 +165,7 @@ contract QuickBet{
             //exit out if threshold is hit
             if (consecutiveSuccesses == successThreshold){
                 winningBet = majority;
+                calculatePayOut(_betID);
                 return;
             }
 
@@ -172,14 +178,17 @@ contract QuickBet{
         revert("Consensus was not reached. Reverting the process. Everyone must attest again");
     }
 
+    function send(uint256 amount, address payable to) internal {
+        bool sent = to.send(amount);
+        require(sent, "failed to send Ether");
+    }
+
     /**
      * @dev logic to calculate payouts for winners
-     * @dev winners must approve to receive their funds 
+     * @param _betID relevant bet
      */
-    function payOut(uint256 _betID) public {
-        //require(allBets[_betID].payoutReady, "payout not ready");
-        //require(allBets[_betID].winningBet == playerChoices[msg.sender],  "only winners get paid");
-        /* pay the man */
+    function calculatePayOut(uint256 _betID) internal {
+        require(allBets[_betID].payoutReady, "payout not ready");
     }
 
     // do not touch
