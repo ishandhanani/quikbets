@@ -145,6 +145,8 @@ contract QuickBet{
             }
 
             //check consensus
+            // for several choices, we would use votes.max, accounting for
+            // the possibility of two maxima.
             majority = (votes[0] > votes[1]) ? CHOICE.a : CHOICE.b ;
 
             //check consecutive
@@ -157,16 +159,16 @@ contract QuickBet{
 
             //exit out if threshold is hit
             if (consecutiveSuccesses == successThreshold){
+                winningBet = majority;
                 return;
             }
 
-            //this then needs to hold the result of every single round
-
+            //this then needs to hold the result of every single round <- why? aren't we just counting consecutive rounds?
             // if its the same for Y times --> then we exit out and declare a final value
             //if consensus was not reached:
             ++round;
         }
-        //remove all the attestations to reset 
+        //remove all the attestations to reset
         revert("Consensus was not reached. Reverting the process. Everyone must attest again");
     }
 
