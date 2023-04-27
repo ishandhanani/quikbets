@@ -10,11 +10,8 @@ contract QuickBet{
     // only binary bets allowed
     // the description should clearly specify what each choice corresponds to
     // using an enum instead of a binary choice allows us to scale in the future
-    // accepts 0 for Choice1 and 1 for Choice2...probably change 
-    enum CHOICE {
-        Choice1,
-        Choice2
-    }
+    // accepts 0 for a and 1 for b...probably change 
+    enum CHOICE {a,b}
     
     //restructure the attestation variables to make this cleaner
     struct Bet {
@@ -46,7 +43,7 @@ contract QuickBet{
      * @param _wager the initiating player's wager
      */
     function createBet(string calldata _description, CHOICE _choice, uint256 _wager) public payable {
-        require(uint(_choice) == 1 || uint(_choice) == 0, "You must chose 0 for Choice1 or 1 for Choice2");
+        require(uint(_choice) == 1 || uint(_choice) == 0, "You must chose 0 for a or 1 for b");
         betNum++;
         allBets[betNum].betID = betNum;
         allBets[betNum].description = _description;
@@ -139,7 +136,7 @@ contract QuickBet{
                 uint256 j = uint256(keccak256(abi.encodePacked(block.timestamp, i))) % bet.players.length; //logic for randomness
                 address player = bet.players[j];
                 sampledPlayers[i] = player;
-                if (bet.playerAttestations[player] == CHOICE.Choice1){ //might have to wrap the CHOICE.Choice1 in a uint()
+                if (bet.playerAttestations[player] == CHOICE.a){
                     votes[0]++;
                 }
                 else {
@@ -150,10 +147,10 @@ contract QuickBet{
             //check consensus
             if (votes[0] > votes[1]) {
                 if (votes[0] > votes[1]){
-                    majority = CHOICE.Choice1;
+                    majority = CHOICE.a;
                 }
                 else {
-                    majority = CHOICE.Choice2;
+                    majority = CHOICE.b;
                 }
             }
 
