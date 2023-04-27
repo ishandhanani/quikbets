@@ -145,12 +145,7 @@ contract QuickBet{
             }
 
             //check consensus
-                if (votes[0] > votes[1]){
-                    majority = CHOICE.a;
-                }
-                else {
-                    majority = CHOICE.b;
-                }
+            majority = (votes[0] > votes[1]) ? CHOICE.a : CHOICE.b ;
 
             //check consecutive
             if (majority == prevChoice){
