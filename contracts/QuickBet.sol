@@ -117,7 +117,7 @@ contract QuickBet{
 
         uint8 round = 0;
         uint8 maxRounds = 10; // does this need to be dynamic? i dont think so...
-        uint8[type(CHOICE).max + 1] memory votes; //static size array for votes
+        uint8[type(CHOICE).max + 1] memory votes; //static-size array for votes
         uint256 sampleSize = minAttestations / 2; //this might have to be dynamic based on the number of betters
         uint256 consecutiveSuccesses = 0;
         uint256 successThreshold = 6;
@@ -145,14 +145,12 @@ contract QuickBet{
             }
 
             //check consensus
-            if (votes[0] > votes[1]) {
                 if (votes[0] > votes[1]){
                     majority = CHOICE.a;
                 }
                 else {
                     majority = CHOICE.b;
                 }
-            }
 
             //check consecutive
             if (majority == prevChoice){
@@ -168,8 +166,9 @@ contract QuickBet{
             }
 
             //this then needs to hold the result of every single round
+
             // if its the same for Y times --> then we exit out and declare a final value
-            //if consensus was not reached
+            //if consensus was not reached:
             ++round;
         }
         //remove all the attestations to reset 
