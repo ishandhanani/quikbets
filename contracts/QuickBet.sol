@@ -117,7 +117,7 @@ contract QuickBet{
 
         uint8 round = 0;
         uint8 maxRounds = 10; // does this need to be dynamic? i dont think so...
-        uint8[2] memory votes; //static size array for votes --> index 0 is for the vote=0 and index 1 is for vote=2
+        uint8[type(CHOICE).max + 1] memory votes; //static size array for votes
         uint256 sampleSize = minAttestations / 2; //this might have to be dynamic based on the number of betters
         uint256 consecutiveSuccesses = 0;
         uint256 successThreshold = 6;
@@ -127,8 +127,8 @@ contract QuickBet{
             // is this optimal to happen here?
             CHOICE prevChoice;
             CHOICE majority;
-            votes[0] = 0;
-            votes[1] = 0;
+            votes[0] = 0; // a
+            votes[1] = 0; // b
 
             //take a random sample - this lets us scale if there are a lot of betters
             address[] memory sampledPlayers = new address[](sampleSize);
