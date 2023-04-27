@@ -10,7 +10,6 @@ contract QuickBet{
     // only binary bets allowed
     // the description should clearly specify what each choice corresponds to
     // using an enum instead of a binary choice allows us to scale in the future
-    // accepts 0 for a and 1 for b...probably change 
     enum CHOICE {a,b}
     
     //restructure the attestation variables to make this cleaner
@@ -43,8 +42,8 @@ contract QuickBet{
      * @param _wager the initiating player's wager
      */
     function createBet(string calldata _description, CHOICE _choice, uint256 _wager) public payable {
-        require(uint(_choice) == 1 || uint(_choice) == 0, "You must chose 0 for a or 1 for b");
-        betNum++;
+        require(uint(_choice) == 1 || uint(_choice) == 0, "You must chose 0 for choice 1 or 1 for choice 2");
+        ++betNum;
         allBets[betNum].betID = betNum;
         allBets[betNum].description = _description;
         allBets[betNum].players.push(msg.sender);
@@ -86,6 +85,16 @@ contract QuickBet{
         Bet storage bet = allBets[_betID];
         bet.playerAttestations[msg.sender] = claim;
         ++bet.attestationCount;
+    }
+
+    /**
+     * @dev logic to calculate payouts for winners
+     * @dev each winner receives their wager plus a share of the losers' wager
+     * @param _betID relevant bet
+     */
+    function calculatePayOut(uint256 _betID) internal {
+        Bet storage bet = allBets[_betID];
+        require(bet.payoutReady, "payout not ready");
     }
 
     /**
@@ -142,10 +151,10 @@ contract QuickBet{
                 address player = bet.players[j];
                 sampledPlayers[i] = player;
                 if (bet.playerAttestations[player] == CHOICE.a){
-                    votes[0]++;
+                    ++votes[0];
                 }
                 else {
-                    votes[1]++;
+                    ++votes[1];
                 }
             }
 
@@ -181,14 +190,6 @@ contract QuickBet{
     function send(uint256 amount, address payable to) internal {
         bool sent = to.send(amount);
         require(sent, "failed to send Ether");
-    }
-
-    /**
-     * @dev logic to calculate payouts for winners
-     * @param _betID relevant bet
-     */
-    function calculatePayOut(uint256 _betID) internal {
-        require(allBets[_betID].payoutReady, "payout not ready");
     }
 
     // do not touch
