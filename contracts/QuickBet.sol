@@ -109,9 +109,7 @@ contract QuickBet{
         uint256 minAttestations = bet.players.length - 2; //this is a placeholder for now
 
         //make sure minimum number of people have called the function to start the snowball
-        if (bet.attestationCount < minAttestations) { 
-            revert("More attestations are required for random sampling");
-        }
+        require(bet.attestationCount >= minAttestations, "More attestations are required for random sampling");
 
         //implementing a rough/custom version of snowball consensus
         //  Randomly sample a minimum group of voters (size k)
