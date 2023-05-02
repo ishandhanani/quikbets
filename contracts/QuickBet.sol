@@ -175,6 +175,7 @@ contract QuickBet{
             if (consecutiveSuccesses == successThreshold){
                 winningBet = majority;
                 calculatePayOut(_betID);
+                bet.payoutReady = true;
                 return;
             }
 
